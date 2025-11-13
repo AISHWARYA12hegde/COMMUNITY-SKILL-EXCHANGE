@@ -264,5 +264,23 @@ app.get("/dashboard/:user_id", (req, res) => {
   });
 });
 
+// ✅ Check if user already added skills
+app.get("/check-skills/:user_id", (req, res) => {
+  const { user_id } = req.params;
+
+  const query = `
+    SELECT COUNT(*) AS skill_count
+    FROM user_skills
+    WHERE user_id = ?;
+  `;
+
+  db.query(query, [user_id], (err, result) => {
+    if (err) return res.status(500).json({ message: "Database error", error: err });
+
+    const hasSkills = result[0].skill_count > 0;
+    res.json({ hasSkills });
+  });
+});
+
 // ==================== START SERVER ====================
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
