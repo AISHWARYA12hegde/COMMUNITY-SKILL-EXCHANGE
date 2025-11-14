@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile | Skill Exchange</title>
+  <link rel="stylesheet" href="profile.css">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- 🌟 Navbar -->
+  <nav class="navbar">
+    <h1>My Profile</h1>
+    <div class="nav-buttons">
+      </i><button onclick="window.location.href='explore.html'"><i class="fas fa-globe"></i>Explore</button>
+      <button onclick="window.location.href='index.html'"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </nav>
+
+  <!-- 👤 User Info Section -->
+  <section id="user-info" class="card">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile Pic" class="profile-pic">
+
+    <div>
+      <h2 id="user-name">Loading...</h2>
+      <p id="user-email"></p>
+    </div>
+  </section>
+
+  <!-- ⚙️ Skills Section -->
+  <section id="skills-section" class="skills-section">
+    <h2>My Skills</h2>
+
+    <div id="skills-container" class="skills-container">
+      <p>Loading your skills...</p>
+    </div>
+
+    <button class="add-skill-btn" onclick="window.location.href='addskills.html'">
+      + Add New Skill
+    </button>
+  </section>
+
+  <script src="profile.js"></script>
+</body>
+</html>

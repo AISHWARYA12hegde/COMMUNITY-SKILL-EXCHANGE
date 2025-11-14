@@ -1,18 +1,25 @@
+// ======================================================
+//  SKILL EXCHANGE BACKEND (CLEAN + FIXED)
+// ======================================================
+
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// ==================== DATABASE CONNECTION ====================
+// ======================================================
+//  DATABASE CONNECTION
+// ======================================================
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root", // your MySQL password
+  password: "root",
   database: "skillexchange"
 });
 
@@ -59,12 +66,13 @@ db.connect(err => {
   `);
 });
 
-// ==================== REGISTER ====================
+// ======================================================
+//  REGISTER
+// ======================================================
 app.post("/register", async (req, res) => {
   try {
-    console.log("📥 Incoming registration data:", req.body); // <--- add this
-
     const { name, email, bio, username, password, contact_number, location } = req.body;
+
     if (!name || !email || !username || !password)
       return res.status(400).json({ message: "Required fields missing" });
 
@@ -79,17 +87,17 @@ app.post("/register", async (req, res) => {
           console.error("❌ MySQL Error:", err);
           return res.status(500).json({ message: "Error registering user", error: err });
         }
-        console.log("✅ User inserted:", result);
         res.json({ message: "✅ Registered successfully!" });
       }
     );
   } catch (error) {
-    console.error("❌ Server error:", error);
     res.status(500).json({ message: "Server error", error });
   }
 });
 
-// ==================== LOGIN ====================
+// ======================================================
+//  LOGIN
+// ======================================================
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -101,27 +109,39 @@ app.post("/login", (req, res) => {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ message: "Invalid password" });
 
-    // Check if user has skills already
-    db.query("SELECT COUNT(*) AS skillCount FROM user_skills WHERE user_id = ?", [user.user_id], (err2, countRes) => {
-      if (err2) return res.status(500).json({ message: "Error checking skills" });
-      const hasSkills = countRes[0].skillCount > 0;
-      res.json({ message: "✅ Login successful", user_id: user.user_id, hasSkills });
-    });
+    db.query(
+      "SELECT COUNT(*) AS skillCount FROM user_skills WHERE user_id = ?",
+      [user.user_id],
+      (err2, countRes) => {
+        if (err2) return res.status(500).json({ message: "Error checking skills" });
+
+        res.json({
+          message: "✅ Login successful",
+          user_id: user.user_id,
+          hasSkills: countRes[0].skillCount > 0
+        });
+      }
+    );
   });
 });
 
-// ADD SKILL 
+// ======================================================
+//  ADD SKILLS (Teach / Learn)
+// ======================================================
 app.post("/add-skill", (req, res) => {
   const { user_id, teachSkill, learnSkill } = req.body;
 
-  if (!user_id) return res.status(400).json({ message: "User ID missing" });
-  if (!teachSkill && !learnSkill)
-    return res.status(400).json({ message: "At least one skill required" });
+  if (!user_id) return res.status(400).json({ message: "User ID required" });
 
+  // --- create or fetch skill ---
   function getOrAddSkill(skill_name, description, callback) {
     db.query("SELECT skill_id FROM skills WHERE skill_name = ?", [skill_name], (err, result) => {
       if (err) return callback(err);
-      if (result.length > 0) return callback(null, result[0].skill_id);
+
+      if (result.length > 0) {
+        return callback(null, result[0].skill_id);
+      }
+
       db.query(
         "INSERT INTO skills (skill_name, description) VALUES (?, ?)",
         [skill_name, description || null],
@@ -133,52 +153,56 @@ app.post("/add-skill", (req, res) => {
     });
   }
 
-  // Add or update user skill entry
+  // --- update user's skill relationship ---
   function updateUserSkill(user_id, skill_id, type, experience_level, callback) {
-    const fieldToUpdate = type === "Teach" ? "can_teach" : "can_learn";
+    const field = type === "Teach" ? "can_teach" : "can_learn";
+
     db.query(
-      `INSERT INTO user_skills (user_id, skill_id, ${fieldToUpdate}, experience_level)
+      `INSERT INTO user_skills (user_id, skill_id, ${field}, experience_level)
        VALUES (?, ?, 1, ?)
-       ON DUPLICATE KEY UPDATE ${fieldToUpdate} = 1, experience_level = VALUES(experience_level)`,
+       ON DUPLICATE KEY UPDATE ${field} = 1, experience_level = VALUES(experience_level)`,
       [user_id, skill_id, experience_level || null],
       callback
     );
   }
 
-  // Sequentially add learn + teach skills
   const tasks = [];
 
   if (teachSkill) {
-    tasks.push(callback => {
+    tasks.push(cb => {
       getOrAddSkill(teachSkill.skill_name, teachSkill.description, (err, skill_id) => {
-        if (err) return callback(err);
-        updateUserSkill(user_id, skill_id, "Teach", teachSkill.experience_level, callback);
+        if (err) return cb(err);
+        updateUserSkill(user_id, skill_id, "Teach", teachSkill.experience_level, cb);
       });
     });
   }
 
   if (learnSkill) {
-    tasks.push(callback => {
+    tasks.push(cb => {
       getOrAddSkill(learnSkill.skill_name, learnSkill.description, (err, skill_id) => {
-        if (err) return callback(err);
-        updateUserSkill(user_id, skill_id, "Learn", learnSkill.experience_level, callback);
+        if (err) return cb(err);
+        updateUserSkill(user_id, skill_id, "Learn", learnSkill.experience_level, cb);
       });
     });
   }
 
-  // Execute both
-  let completed = 0;
+  let done = 0;
+
   tasks.forEach(task => {
     task(err => {
       if (err) return res.status(500).json({ message: "Error adding skill", error: err });
-      completed++;
-      if (completed === tasks.length)
-        res.json({ message: "✅ Skill(s) added successfully!" });
+
+      done++;
+      if (done === tasks.length) {
+        res.json({ message: "✅ Skills added successfully!" });
+      }
     });
   });
 });
 
-// ==================== GET ALL SKILLS ====================
+// ======================================================
+//  GET ALL SKILLS (Explore Page)
+// ======================================================
 app.get("/skills", (req, res) => {
   const query = `
     SELECT 
@@ -194,25 +218,26 @@ app.get("/skills", (req, res) => {
   `;
 
   db.query(query, (err, result) => {
-    if (err) {
-      console.error("❌ Error fetching skills:", err);
-      return res.status(500).json({ message: "Error fetching skills", error: err });
-    }
+    if (err) return res.status(500).json({ message: "Database error", error: err });
     res.json(result);
   });
 });
 
-// ==================== USER DASHBOARD DATA ====================
+// ======================================================
+//  USER DASHBOARD
+// ======================================================
 app.get("/dashboard/:user_id", (req, res) => {
   const user_id = req.params.user_id;
 
   const userQuery = `SELECT name, email, username FROM users WHERE user_id = ?`;
+
   const skillQuery = `
     SELECT s.skill_name, us.can_teach, us.can_learn
     FROM user_skills us
     JOIN skills s ON us.skill_id = s.skill_id
     WHERE us.user_id = ?;
   `;
+
   const exploreQuery = `
     SELECT 
       u.name AS user_name, 
@@ -227,28 +252,15 @@ app.get("/dashboard/:user_id", (req, res) => {
     WHERE us.user_id != ?;
   `;
 
-  // Fetch user info
   db.query(userQuery, [user_id], (err, userResult) => {
-    if (err) {
-      console.error("❌ Error fetching user:", err);
-      return res.status(500).json({ message: "Error fetching user" });
-    }
-    if (userResult.length === 0)
-      return res.status(404).json({ message: "User not found" });
+    if (err) return res.status(500).json({ message: "Database error" });
+    if (userResult.length === 0) return res.status(404).json({ message: "User not found" });
 
-    // Fetch user's skills
     db.query(skillQuery, [user_id], (err2, skillResult) => {
-      if (err2) {
-        console.error("❌ Error fetching user skills:", err2);
-        return res.status(500).json({ message: "Error fetching user skills" });
-      }
+      if (err2) return res.status(500).json({ message: "Error fetching skills" });
 
-      // Fetch explore data
       db.query(exploreQuery, [user_id], (err3, exploreResult) => {
-        if (err3) {
-          console.error("❌ Error fetching explore data:", err3);
-          return res.status(500).json({ message: "Error fetching explore data" });
-        }
+        if (err3) return res.status(500).json({ message: "Error fetching explore data" });
 
         const teachSkills = skillResult.filter(s => s.can_teach).map(s => s.skill_name);
         const learnSkills = skillResult.filter(s => s.can_learn).map(s => s.skill_name);
@@ -264,23 +276,108 @@ app.get("/dashboard/:user_id", (req, res) => {
   });
 });
 
-// ✅ Check if user already added skills
+// ======================================================
+//  CHECK IF USER HAS ADDED SKILLS
+// ======================================================
 app.get("/check-skills/:user_id", (req, res) => {
   const { user_id } = req.params;
 
-  const query = `
-    SELECT COUNT(*) AS skill_count
-    FROM user_skills
-    WHERE user_id = ?;
+  db.query(
+    "SELECT COUNT(*) AS skill_count FROM user_skills WHERE user_id = ?",
+    [user_id],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: "Database error" });
+      res.json({ hasSkills: result[0].skill_count > 0 });
+    }
+  );
+});
+
+// ======================================================
+//  PROFILE PAGE ROUTES
+// ======================================================
+app.get("/get-user/:user_id", (req, res) => {
+  const { user_id } = req.params;
+
+  db.query(
+    "SELECT name, email, username FROM users WHERE user_id = ?",
+    [user_id],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: "Error fetching user" });
+      if (result.length === 0) return res.status(404).json({ message: "User not found" });
+      res.json(result[0]);
+    }
+  );
+});
+
+app.get("/user-skills/:user_id", (req, res) => {
+  const { user_id } = req.params;
+
+  const sql = `
+    SELECT us.id, s.skill_name,
+           CASE 
+             WHEN us.can_teach = 1 THEN 'Teach'
+             WHEN us.can_learn = 1 THEN 'Learn'
+             ELSE 'Other'
+           END AS type
+    FROM user_skills us
+    JOIN skills s ON us.skill_id = s.skill_id
+    WHERE us.user_id = ?;
   `;
 
-  db.query(query, [user_id], (err, result) => {
-    if (err) return res.status(500).json({ message: "Database error", error: err });
-
-    const hasSkills = result[0].skill_count > 0;
-    res.json({ hasSkills });
+  db.query(sql, [user_id], (err, result) => {
+    if (err) return res.status(500).json({ message: "Error fetching skills" });
+    res.json(result);
   });
 });
 
-// ==================== START SERVER ====================
+// DELETE SKILL
+app.delete("/delete-skill/:id", (req, res) => {
+  const { id } = req.params;
+
+  db.query("DELETE FROM user_skills WHERE id = ?", [id], err => {
+    if (err) return res.status(500).json({ message: "Error deleting skill" });
+    res.json({ message: "Skill deleted successfully!" });
+  });
+});
+
+// UPDATE SKILL
+app.put("/update-skill/:id", (req, res) => {
+  const { id } = req.params;
+  const { skill_name, type } = req.body;
+
+  const can_teach = type === "Teach" ? 1 : 0;
+  const can_learn = type === "Learn" ? 1 : 0;
+
+  db.query("SELECT skill_id FROM skills WHERE skill_name = ?", [skill_name], (err, result) => {
+    if (err) return res.status(500).json({ message: "Error checking skill" });
+
+    if (result.length === 0) {
+      db.query("INSERT INTO skills (skill_name) VALUES (?)", [skill_name], (err2, insertRes) => {
+        if (err2) return res.status(500).json({ message: "Error adding skill" });
+        updateSkill(insertRes.insertId);
+      });
+    } else {
+      updateSkill(result[0].skill_id);
+    }
+  });
+
+  function updateSkill(skill_id) {
+    db.query(
+      "UPDATE user_skills SET skill_id = ?, can_teach = ?, can_learn = ? WHERE id = ?",
+      [skill_id, can_teach, can_learn, id],
+      err => {
+        if (err) return res.status(500).json({ message: "Error updating skill" });
+        res.json({ message: "Skill updated successfully!" });
+      }
+    );
+  }
+});
+
+// ======================================================
+//  START SERVER
+// ======================================================
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
+
+
+
+

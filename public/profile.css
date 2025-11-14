@@ -1,0 +1,160 @@
+/* ------------------ GLOBAL ------------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #f4f7fb;
+  color: #333;
+}
+
+/* ------------------ NAVBAR ------------------ */
+.navbar {
+  background: #0a2647;
+  color: #fff;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.nav-buttons button {
+  background: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #0a2647;
+  font-weight: 500;
+  margin-left: 10px;
+  transition: 0.3s ease;
+}
+
+.nav-buttons button:hover {
+  background: #00a6ff;
+  color: white;
+}
+
+/* ------------------ USER INFO ------------------ */
+#user-info {
+  margin: 40px auto;
+  padding: 25px;
+  width: 60%;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  text-align: left;
+}
+
+.profile-pic {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+}
+
+/* ------------------ SKILLS SECTION ------------------ */
+.skills-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.skills-section h2 {
+  font-size: 1.8rem;
+  color: #0a2647;
+  margin-bottom: 20px;
+}
+
+.skills-container {
+  width: 70%;
+  margin: auto;
+}
+
+/* Single card */
+.skill-card {
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: 0.2s ease;
+}
+
+.skill-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+}
+
+.skill-card span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Buttons */
+.buttons button {
+  border: none;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.edit-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #3e8e41;
+}
+
+.delete-btn {
+  background: #e53935;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #c62828;
+}
+
+.add-skill-btn {
+  background: #0a2647;
+  color: #fff;
+  padding: 12px 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.add-skill-btn:hover {
+  background: #083054;
+}
+
+/* ------------------ RESPONSIVE ------------------ */
+@media (max-width: 768px) {
+  #user-info {
+    width: 90%;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .skills-container {
+    width: 90%;
+  }
+}
