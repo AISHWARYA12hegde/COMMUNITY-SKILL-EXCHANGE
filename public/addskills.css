@@ -145,3 +145,63 @@ select {
   font-size: 1rem;
   outline: none;
 }
+
+.form-errors {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 133, 133, 0.6);
+  color: #ffe0e0;
+  border-radius: 12px;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  display: none;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.form-errors.active {
+  display: block;
+}
+
+input.input-error,
+textarea.input-error {
+  border: 2px solid #ff9c9c;
+  background: rgba(255, 156, 156, 0.1);
+}
+
+.toast-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 230px;
+  background: rgba(10, 38, 71, 0.9);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border-left: 6px solid #a0c4ff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(-8px);
+  animation: toast-in 0.3s forwards;
+}
+
+.toast.success {
+  border-left-color: #30c78d;
+}
+
+.toast.error {
+  border-left-color: #ff6b6b;
+}
+
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

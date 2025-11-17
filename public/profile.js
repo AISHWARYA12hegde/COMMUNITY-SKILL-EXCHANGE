@@ -11,6 +11,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userNameEl = document.getElementById("user-name");
   const userEmailEl = document.getElementById("user-email");
   const skillsContainer = document.getElementById("skills-container");
+  const favoritesContainer = document.getElementById("favorites-container");
+  const favoritesKey = `favorites_${user_id}`;
+
+  const loadFavorites = () => {
+    try {
+      return JSON.parse(localStorage.getItem(favoritesKey)) || [];
+    } catch (err) {
+      console.warn("Unable to parse favorites", err);
+      return [];
+    }
+  };
+
+  const renderFavorites = () => {
+    const favorites = loadFavorites();
+    if (!favorites.length) {
+      favoritesContainer.innerHTML = `<p>You haven't saved any profiles yet.</p>`;
+      return;
+    }
+
+    favoritesContainer.innerHTML = favorites
+      .map(
+        (fav) => `
+        <div class="favorite-card">
+          <div>
+            <h3>${fav.name}</h3>
+            <p><strong>Teaches:</strong> ${fav.teachSkills?.join(", ") || "None"}</p>
+            <p><strong>Learning:</strong> ${fav.learnSkills?.join(", ") || "None"}</p>
+          </div>
+          <button class="remove-fav" data-id="${fav.id}">Remove</button>
+        </div>
+      `
+      )
+      .join("");
+  };
+
+  favoritesContainer.addEventListener("click", (event) => {
+    const btn = event.target.closest(".remove-fav");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const updated = loadFavorites().filter((fav) => String(fav.id) !== String(id));
+    localStorage.setItem(favoritesKey, JSON.stringify(updated));
+    renderFavorites();
+  });
 
   try {
     // Fetch user data
@@ -26,12 +69,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!skills.length) {
       skillsContainer.innerHTML = `<p>No skills added yet.</p>`;
-      return;
-    }
-
-    skillsContainer.innerHTML = skills
-      .map(
-        (s) => `
+    } else {
+      skillsContainer.innerHTML = skills
+        .map(
+          (s) => `
         <div class="skill-card">
           <span><b>${s.skill_name}</b> (${s.type})</span>
 
@@ -45,11 +86,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
         </div>
       `
-      )
-      .join("");
+        )
+        .join("");
+    }
+
+    renderFavorites();
   } catch (err) {
     console.error(err);
     skillsContainer.innerHTML = `<p>Error loading data.</p>`;
+    favoritesContainer.innerHTML = `<p>Error loading bookmarks.</p>`;
   }
 });
 

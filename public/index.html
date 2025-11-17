@@ -39,9 +39,10 @@
       <!-- Login Box -->
       <div class="form-box login-box" id="loginBox">
         <h2>Login</h2>
-        <form id="loginForm">
+        <form id="loginForm" novalidate>
           <input type="email" id="loginEmail" placeholder="Email" required>
-          <input type="password" id="loginPassword" placeholder="Password" required>
+          <input type="password" id="loginPassword" placeholder="Password" required minlength="6">
+          <div class="form-errors" id="loginErrors" aria-live="polite"></div>
           <button type="submit">Login</button>
           <p>Don’t have an account? <a href="#" id="showRegister">Register Now</a></p>
         </form>
@@ -52,14 +53,15 @@
       <!-- Register Box -->
       <div class="form-box register-box" id="registerBox" style="display: none;">
         <h2>Register</h2>
-        <form id="registerForm">
-          <input type="text" placeholder="Full Name" required>
-         <input type="email" placeholder="Email Address" required>
-         <textarea placeholder="Short Bio (Tell us about yourself)" rows="3" required></textarea>
-         <input type="text" placeholder="User ID" required>
-          <input type="password" placeholder="Password" required>
-         <input type="tel" placeholder="Contact Number" required>
-         <input type="text" placeholder="Location" required>
+        <form id="registerForm" novalidate>
+          <input type="text" id="registerName" placeholder="Full Name" required minlength="3">
+         <input type="email" id="registerEmail" placeholder="Email Address" required>
+         <textarea id="registerBio" placeholder="Short Bio (Tell us about yourself)" rows="3" required minlength="10"></textarea>
+         <input type="text" id="registerUsername" placeholder="User ID" required minlength="3">
+          <input type="password" id="registerPassword" placeholder="Password" required minlength="6">
+         <input type="tel" id="registerPhone" placeholder="Contact Number" required>
+         <input type="text" id="registerLocation" placeholder="Location" required>
+         <div class="form-errors" id="registerErrors" aria-live="polite"></div>
          <button type="submit">Register</button>
         <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
         </form>
@@ -94,6 +96,7 @@
     <p>© 2025 Community Skill Exchange | All Rights Reserved</p>
   </footer>
 
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
   <script src="script.js"></script>
 </body>
 </html>

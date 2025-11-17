@@ -23,7 +23,7 @@
       Share what you can teach and what you want to learn!
     </p>
 
-    <form id="skillForm">
+    <form id="skillForm" novalidate>
       <!-- Skill to Learn -->
       <h3>🧑‍🎓 Skill You Want to Learn</h3>
       <label for="learn_skill_name">Skill Name</label>
@@ -56,6 +56,7 @@
       <label for="teach_description">Tell others about your teaching</label>
       <textarea id="teach_description" rows="3" placeholder="What can you teach?" required></textarea>
 
+      <div class="form-errors" id="skillErrors" aria-live="polite"></div>
       <button type="submit">✨ Submit</button>
     </form>
 
@@ -66,6 +67,7 @@
     <p>© 2025 SkillExchange. Learn. Teach. Grow together.</p>
   </footer>
 
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
   <script src="addskills.js"></script>
 </body>
 </html>

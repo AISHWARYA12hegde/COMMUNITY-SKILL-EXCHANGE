@@ -118,3 +118,159 @@ nav ul li a:hover::after {
   font-size: 1rem;
   margin: 5px 0;
 }
+
+.explore-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.explore-toolbar input,
+.explore-toolbar select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #d5dbe5;
+  font-size: 0.95rem;
+  min-width: 220px;
+  font-family: inherit;
+}
+
+.favorites-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid #d5dbe5;
+  background: #fff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0a2647;
+  cursor: pointer;
+}
+
+.favorites-toggle input {
+  accent-color: #0a2647;
+}
+
+.results-meta {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.empty-state {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f8f9fb;
+  color: #555;
+  font-weight: 600;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  border: none;
+  background: #0a2647;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.pagination button[disabled] {
+  background: #b4c0cf;
+  cursor: default;
+}
+
+.pagination button.active {
+  background: #205295;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.toast-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 3000;
+}
+
+.toast {
+  min-width: 220px;
+  background: #0a2647;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+  border-left: 5px solid #4dabf7;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: toast-in 0.3s forwards;
+}
+
+.toast.success {
+  border-left-color: #30c78d;
+}
+
+.toast.error {
+  border-left-color: #ff6b6b;
+}
+
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fav-toggle {
+  margin-top: 15px;
+  border: 1px solid #205295;
+  background: #fff;
+  color: #205295;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.fav-toggle span {
+  font-size: 1rem;
+}
+
+.fav-toggle.active {
+  background: #205295;
+  color: #fff;
+}
+
+.fav-toggle.active span {
+  color: #ffd166;
+}

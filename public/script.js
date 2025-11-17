@@ -1,4 +1,37 @@
 // 🔄 Toggle between Login and Register
+const toastStack = document.getElementById("toastStack");
+
+const showToast = (message, type = "info", timeout = 3200) => {
+  if (!toastStack) return;
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  toastStack.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(-10px)";
+  }, timeout - 300);
+  setTimeout(() => toast.remove(), timeout);
+};
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const toggleInputError = (input, hasError) => {
+  if (!input) return;
+  input.classList.toggle("input-error", hasError);
+};
+
+const updateErrorBox = (box, errors) => {
+  if (!box) return;
+  if (errors.length) {
+    box.innerHTML = errors.map((msg) => `<span>${msg}</span>`).join("<br>");
+    box.classList.add("active");
+  } else {
+    box.innerHTML = "";
+    box.classList.remove("active");
+  }
+};
+
 document.getElementById("showRegister").addEventListener("click", (e) => {
   e.preventDefault();
   document.getElementById("loginBox").style.display = "none";
@@ -12,9 +45,116 @@ document.getElementById("showLogin").addEventListener("click", (e) => {
 });
 
 
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+const loginErrors = document.getElementById("loginErrors");
+
+const validateLoginForm = () => {
+  const errors = [];
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
+
+  if (!email) {
+    errors.push("Email is required.");
+    toggleInputError(loginEmail, true);
+  } else if (!emailRegex.test(email)) {
+    errors.push("Enter a valid email address.");
+    toggleInputError(loginEmail, true);
+  } else {
+    toggleInputError(loginEmail, false);
+  }
+
+  if (!password) {
+    errors.push("Password is required.");
+    toggleInputError(loginPassword, true);
+  } else if (password.length < 6) {
+    errors.push("Password must be at least 6 characters.");
+    toggleInputError(loginPassword, true);
+  } else {
+    toggleInputError(loginPassword, false);
+  }
+
+  updateErrorBox(loginErrors, errors);
+  return errors.length === 0;
+};
+
+const registerFields = {
+  name: document.getElementById("registerName"),
+  email: document.getElementById("registerEmail"),
+  bio: document.getElementById("registerBio"),
+  username: document.getElementById("registerUsername"),
+  password: document.getElementById("registerPassword"),
+  phone: document.getElementById("registerPhone"),
+  location: document.getElementById("registerLocation"),
+};
+const registerErrors = document.getElementById("registerErrors");
+
+const validateRegisterForm = () => {
+  const errors = [];
+  const phoneDigits = registerFields.phone.value.replace(/\D/g, "");
+
+  if (registerFields.name.value.trim().length < 3) {
+    errors.push("Full name should be at least 3 characters.");
+    toggleInputError(registerFields.name, true);
+  } else {
+    toggleInputError(registerFields.name, false);
+  }
+
+  if (!emailRegex.test(registerFields.email.value.trim())) {
+    errors.push("Provide a valid email address.");
+    toggleInputError(registerFields.email, true);
+  } else {
+    toggleInputError(registerFields.email, false);
+  }
+
+  if (registerFields.bio.value.trim().length < 10) {
+    errors.push("Bio should describe you in at least 10 characters.");
+    toggleInputError(registerFields.bio, true);
+  } else {
+    toggleInputError(registerFields.bio, false);
+  }
+
+  if (registerFields.username.value.trim().length < 3) {
+    errors.push("User ID must be 3 characters or more.");
+    toggleInputError(registerFields.username, true);
+  } else {
+    toggleInputError(registerFields.username, false);
+  }
+
+  if (registerFields.password.value.trim().length < 6) {
+    errors.push("Password should be at least 6 characters.");
+    toggleInputError(registerFields.password, true);
+  } else {
+    toggleInputError(registerFields.password, false);
+  }
+
+  if (phoneDigits.length < 10) {
+    errors.push("Enter a valid contact number (10 digits).");
+    toggleInputError(registerFields.phone, true);
+  } else {
+    toggleInputError(registerFields.phone, false);
+  }
+
+  if (!registerFields.location.value.trim()) {
+    errors.push("Location cannot be empty.");
+    toggleInputError(registerFields.location, true);
+  } else {
+    toggleInputError(registerFields.location, false);
+  }
+
+  updateErrorBox(registerErrors, errors);
+  return errors.length === 0;
+};
+
+document.querySelectorAll("input, textarea").forEach((el) => {
+  el.addEventListener("input", () => el.classList.remove("input-error"));
+});
+
 // 📝 Handle Registration
 document.getElementById("registerForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (!validateRegisterForm()) return;
 
   const form = e.target;
 
@@ -39,6 +179,12 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     document.querySelector("#register-answer").innerText = data.message;
 
     if (response.ok) {
+      showToast("Registration successful! You can log in now.", "success");
+    } else {
+      showToast(data.message || "Registration failed", "error");
+    }
+
+    if (response.ok) {
       // ✅ Auto-switch to login after successful registration
       setTimeout(() => {
         document.getElementById("registerBox").style.display = "none";
@@ -48,7 +194,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 
   } catch (error) {
     console.error("❌ Error during registration:", error);
-    alert("Error connecting to server");
+    showToast("Error connecting to server", "error");
   }
 });
 
@@ -56,6 +202,8 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 // 🔐 Handle Login
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (!validateLoginForm()) return;
 
   const credentials = {
     email: document.getElementById("loginEmail").value,
@@ -72,6 +220,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const data = await response.json();
 
     if (response.ok) {
+      showToast("Login successful! Redirecting you...", "success");
       // ✅ Store user_id and email
       localStorage.setItem("user_id", data.user_id);
       localStorage.setItem("user_email", credentials.email);
@@ -89,10 +238,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     } else {
       document.querySelector("#login-answer").innerText = data.message || "Login failed";
+      showToast(data.message || "Login failed", "error");
     }
   } catch (error) {
     console.error("❌ Error during login:", error);
-    alert("Login failed. Please try again.");
+    showToast("Login failed. Please try again.", "error");
   }
 });
 
